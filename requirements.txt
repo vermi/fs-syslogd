@@ -1,0 +1,4 @@
+snowflake==0.0.3
+tinydb==3.13.0
+pycrypto==2.6.1
+syslog_rfc5424_parser==0.3.1
