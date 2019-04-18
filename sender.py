@@ -11,7 +11,6 @@ HOST, PORT = "localhost", 514
 def signMessage(message):
     digest = SHA256.new()
     digest.update(message.encode('utf-8'))
-    print('DIGEST: {}'.format(digest.hexdigest()))
 
     with open('private_key.pem') as privfile:
         priv_key = privfile.read()
