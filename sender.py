@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import socket
-import sys
+from snowflake import snowflake
 from Crypto.Hash import SHA256
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.PublicKey import RSA
