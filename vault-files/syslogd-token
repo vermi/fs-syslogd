@@ -1,0 +1,9 @@
+Key                  Value
+---                  -----
+token                s.LoKWnaU0aeLDqUGV5gxClE21
+token_accessor       weqFpFl4E8t02dl5bNi3tHlC
+token_duration       720h
+token_renewable      true
+token_policies       ["default" "syslogd"]
+identity_policies    []
+policies             ["default" "syslogd"]
