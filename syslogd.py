@@ -1,32 +1,36 @@
 #!/usr/bin/env python
 
-LOG_FILE = 'youlogfile.log'
-HOST, PORT = "0.0.0.0", 514
-
-import socketserver
-from tinydb import TinyDB
+from base64 import b64encode
 from syslog_rfc5424_parser import SyslogMessage, ParseError
+import keyring
 import json
-from Crypto.Hash import SHA256
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.PublicKey import RSA
-from base64 import b64decode
+from tinydb import TinyDB
+import socketserver
+import requests
+
+LOG_FILE = 'youlogfile.log'
+HOST, PORT = '0.0.0.0', 514
+VAULT_URL = 'http://127.0.0.1:8200'
 
 # Basic syslog functionality taken from @marcelom on github
 # https://gist.github.com/marcelom/4218010
 
 db = TinyDB('syslog.json')
+token = keyring.get_password('dev-vault', 'syslogd')
+headers = {'X-Vault-Token': token}
 
 
-def verifyMessage(message, signature):
-    digest = SHA256.new()
-    digest.update(message.encode('utf-8'))
+def verify_sig(name, msg, sig):
+    url = VAULT_URL + '/v1/transit/verify/{}'.format(name)
+    m = msg.encode()
+    payload = {'input': b64encode(m).decode('ascii'), 'signature': sig}
 
-    with open('public_key.pem') as pub_fp:
-        pub_key = pub_fp.read()
-        verifier = PKCS1_v1_5.new(RSA.importKey(pub_key))
-
-    return verifier.verify(digest, b64decode(signature))
+    try:
+        r = requests.post(url, headers=headers, json=payload)
+        return r.json()['data']['valid']
+    except:
+        raise
+        return False
 
 
 class SyslogUDPHandler(socketserver.BaseRequestHandler):
@@ -39,7 +43,7 @@ class SyslogUDPHandler(socketserver.BaseRequestHandler):
 
         if 'SIGNATURE:' in raw_message:
             raw_message, sig = raw_message.split(' SIGNATURE: ')
-            verified = verifyMessage(raw_message, sig)
+            verified = verify_sig('syslogd', raw_message, sig)
 
         if (verified):
             message = SyslogMessage.parse(raw_message)
@@ -54,11 +58,11 @@ class SyslogUDPHandler(socketserver.BaseRequestHandler):
             socket.sendto(b'Unable to verify signature.', self.client_address)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         with socketserver.UDPServer((HOST, PORT), SyslogUDPHandler) as server:
             server.serve_forever()
     except (IOError, SystemExit, ParseError):
         raise
     except KeyboardInterrupt:
-        print("User initiated shutdown.")
+        print('User initiated shutdown.')

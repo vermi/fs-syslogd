@@ -1,25 +1,43 @@
 #!/usr/bin/env python
 import socket
-from snowflake import snowflake
-from Crypto.Hash import SHA256
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.PublicKey import RSA
 from base64 import b64encode
+import keyring
+import json
+import requests
 
-HOST, PORT = "localhost", 514
+VAULT_URL = 'http://127.0.0.1:8200'
 
-def signMessage(message):
-    digest = SHA256.new()
-    digest.update(message.encode('utf-8'))
-
-    with open('private_key.pem') as privfile:
-        priv_key = privfile.read()
-        signer = PKCS1_v1_5.new(RSA.importKey(priv_key))
-
-    return b64encode(signer.sign(digest))
+HOST, PORT = 'localhost', 514
 
 # SOCK_DGRAM is the socket type to use for UDP sockets
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+token = keyring.get_password('dev-vault', 'syslogd')
+headers = {'X-Vault-Token': token}
+
+
+def rotate_key(name):
+    url = VAULT_URL + '/v1/transit/keys/{}/rotate'.format(name)
+
+    try:
+        r = requests.post(url, headers=headers)
+        r.raise_for_status()
+        return True
+    except:
+        return False
+
+
+def sign_message(name, message):
+    url = VAULT_URL + '/v1/transit/sign/{}'.format(name)
+    m = message.encode()
+    payload = { 'input': b64encode(m).decode('ascii') }
+
+    try:
+        r = requests.post(url, headers=headers, json=payload)
+        return r.json()['data']['signature']
+    except:
+        return None
+
 
 # As you can see, there is no connect() call; UDP has no connections.
 # Instead, data is directly sent to the recipient via sendto().
@@ -28,9 +46,21 @@ with open('MOCK_DATA.txt') as fp:
 
 for l in lines:
     l = l.strip()
-    sig = bytes.decode(signMessage(l))
-    sock.sendto(bytes("{} SIGNATURE: {}\n".format(l, sig), "utf-8"), (HOST, PORT))
-    received = str(sock.recv(1024), "utf-8")
 
-    print("Sent:     {}".format(l))
-    print("Received: {}".format(received))
+    # Generate new key and sign message
+    if rotate_key('syslogd'):
+        sig = sign_message('syslogd', l)
+        if sig is None:
+            print('Unable to sign message!!!')
+            break
+
+        # Send message to server.
+        sock.sendto(bytes('{} SIGNATURE: {}\n'.format(
+            l, sig), 'utf-8'), (HOST, PORT))
+        received = str(sock.recv(1024), 'utf-8')
+
+        print('Sent:     {}'.format(l))
+        print('Received: {}'.format(received))
+    else:
+        print('Unable to rotate key!!!')
+        break
