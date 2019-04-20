@@ -5,7 +5,8 @@ from syslog_rfc5424_parser import SyslogMessage, ParseError
 import keyring
 import json
 from tinydb import TinyDB
-import socketserver
+from twisted.internet.protocol import DatagramProtocol
+from twisted.internet import reactor
 import requests
 
 HOST, PORT = '0.0.0.0', 514
@@ -28,16 +29,14 @@ def verify_sig(name, msg, sig):
         r = requests.post(url, headers=headers, json=payload)
         return r.json()['data']['valid']
     except:
-        raise
         return False
 
 
-class SyslogUDPHandler(socketserver.BaseRequestHandler):
+class SyslogUDPHandler(DatagramProtocol):
 
-    def handle(self):
-        data = self.request[0].strip()
-        socket = self.request[1]
-        raw_message = bytes.decode(data)
+    def datagramReceived(self, data, addr):
+        raw_message = bytes.decode(data).rstrip()
+        self.transport.write("recv'd\n".encode(), addr)
         verified = True
 
         if 'SIGNATURE:' in raw_message:
@@ -47,20 +46,18 @@ class SyslogUDPHandler(socketserver.BaseRequestHandler):
         if (verified):
             message = SyslogMessage.parse(raw_message)
             msgDict = message.as_dict()
-            jsonMsg = json.dumps(msgDict)
-            print(jsonMsg)
+            print(msgDict)
             msgDict['raw_msg'] = raw_message
             msgDict['sig'] = sig
             db.insert(msgDict)
-            socket.sendto(jsonMsg.encode(), self.client_address)
         else:
-            socket.sendto(b'Unable to verify signature.', self.client_address)
+            print('Unable to verify signature.\n>>> ', raw_message)
 
 
 if __name__ == '__main__':
     try:
-        with socketserver.UDPServer((HOST, PORT), SyslogUDPHandler) as server:
-            server.serve_forever()
+        reactor.listenUDP(514, SyslogUDPHandler())
+        reactor.run()
     except (IOError, SystemExit, ParseError):
         raise
     except KeyboardInterrupt:
