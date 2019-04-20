@@ -4,10 +4,12 @@ from base64 import b64encode
 import keyring
 import json
 import requests
+from time import time, sleep
+from random import randint
 
 VAULT_URL = 'http://127.0.0.1:8200'
-
 HOST, PORT = 'localhost', 514
+interval = randint(3, 5)
 
 # SOCK_DGRAM is the socket type to use for UDP sockets
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -45,21 +47,23 @@ with open('MOCK_DATA.txt') as fp:
 
 for l in lines:
     l = l.strip()
+    sleep(randint(0, 3))
+    # Generate new key sort-of-randomly
+    if not (round(time() % interval)):
+        interval = randint(3, 5)
+        if not rotate_key('syslogd'):
+            print('Unable to rotate key!!! THIS IS INSECURE BUT I WILL KEEP GOING!!!')
 
-    # Generate new key and sign message
-    if rotate_key('syslogd'):
-        sig = sign_message('syslogd', l)
-        if sig is None:
-            print('Unable to sign message!!!')
-            break
-
-        # Send message to server.
-        sock.sendto(bytes('{} SIGNATURE: {}\n'.format(
-            l, sig), 'utf-8'), (HOST, PORT))
-        received = str(sock.recv(1024), 'utf-8')
-
-        print('Sent:     {}'.format(l))
-        print('Received: {}'.format(received))
-    else:
-        print('Unable to rotate key!!!')
+    # Sign message and send
+    sig = sign_message('syslogd', l)
+    if sig is None:
+        print('Unable to sign message!!!')
         break
+
+    # Send message to server.
+    sock.sendto(bytes('{} SIGNATURE: {}\n'.format(
+        l, sig), 'utf-8'), (HOST, PORT))
+    received = str(sock.recv(1024), 'utf-8')
+
+    print('Sent:     {}'.format(l))
+    print('Received: {}'.format(received))
