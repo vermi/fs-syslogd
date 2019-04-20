@@ -9,7 +9,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 import requests
 
-HOST, PORT = '0.0.0.0', 514
+LISTEN_PORT = 514
 VAULT_URL = 'http://127.0.0.1:8200'
 
 # Basic syslog functionality taken from @marcelom on github
@@ -56,7 +56,7 @@ class SyslogUDPHandler(DatagramProtocol):
 
 if __name__ == '__main__':
     try:
-        reactor.listenUDP(514, SyslogUDPHandler())
+        reactor.listenUDP(LISTEN_PORT, SyslogUDPHandler())
         reactor.run()
     except (IOError, SystemExit, ParseError):
         raise
