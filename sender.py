@@ -15,7 +15,6 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 token = keyring.get_password('dev-vault', 'syslogd')
 headers = {'X-Vault-Token': token}
 
-
 def rotate_key(name):
     url = VAULT_URL + '/v1/transit/keys/{}/rotate'.format(name)
 

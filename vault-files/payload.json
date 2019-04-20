@@ -1,0 +1,10 @@
+{
+    "policies": [
+      "syslogd"
+    ],
+    "metadata": {
+      "user": "syslogd"
+    },
+    "ttl": "720h",
+    "renewable": true
+  }
