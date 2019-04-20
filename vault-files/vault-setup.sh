@@ -14,10 +14,11 @@ vault login root
 vault secrets enable transit
 vault write -f transit/keys/syslogd
 vault policy write syslogd ./syslogd.hcl
-curl -s \
+curl -s -v \
     --header "X-Vault-Token: root" \
+    --header "Content-Type: application/json" \
     --request POST \
-    --data @payload.json \
+    -d '{"policies": ["default","syslogd"],"metadata": {"user": "syslogd"},"ttl": "720h","renewable": true}' \
     http://127.0.0.1:8200/v1/auth/token/create \
 | jq -r '.auth.client_token' \
 | ./update-token.py
