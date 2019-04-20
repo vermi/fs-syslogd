@@ -14,7 +14,7 @@ vault login root
 vault secrets enable transit
 vault write -f transit/keys/syslogd
 vault policy write syslogd ./syslogd.hcl
-curl -s -v \
+curl -s \
     --header "X-Vault-Token: root" \
     --header "Content-Type: application/json" \
     --request POST \
