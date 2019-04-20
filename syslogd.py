@@ -8,7 +8,6 @@ from tinydb import TinyDB
 import socketserver
 import requests
 
-LOG_FILE = 'youlogfile.log'
 HOST, PORT = '0.0.0.0', 514
 VAULT_URL = 'http://127.0.0.1:8200'
 
