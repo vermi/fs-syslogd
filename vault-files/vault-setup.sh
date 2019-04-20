@@ -12,7 +12,7 @@ echo Hold on a second.
 sleep 2
 vault login root
 vault secrets enable transit
-vault write -f transit/keys/syslogd
+vault write -f transit/keys/syslogd type="rsa-4096"
 vault policy write syslogd ./syslogd.hcl
 curl -s \
     --header "X-Vault-Token: root" \
