@@ -1,0 +1,3 @@
+[submodule "docker-vault"]
+	path = docker-vault
+	url = https://github.com/hashicorp/docker-vault
