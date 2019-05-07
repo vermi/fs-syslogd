@@ -6,10 +6,15 @@ import json
 import requests
 from time import time, sleep
 from random import randint
+import pysectools
 
 VAULT_URL = 'http://127.0.0.1:8200'
 HOST, PORT = 'localhost', 514
 interval = randint(3, 5)
+
+# Protect our memory from leaking secrets
+pysectools.disallow_swap()
+pysectools.disallow_core_dumps()
 
 # SOCK_DGRAM is the socket type to use for UDP sockets
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
