@@ -19,14 +19,5 @@ For running the vault server, make sure you have Docker installed
 
 ## Installation and Setup (Prod)
 
-! Not recommended.
+!!! Not recommended.
 Use your brain and figure it out (for now).
-
-## To-Do
-* Add "tail" support so the sender doesn't just ingest the entire file (lol oops)
-* Encrypt the log storage database
-* Write a Splunk plugin to validate logs
-* Daemonize the sender and receiver
-* Possibly combine the sender and receiver into one package
-* Add message queueing to the sender
-* Secure the token a bit better
