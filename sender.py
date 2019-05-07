@@ -7,9 +7,11 @@ import requests
 from time import time, sleep
 from random import randint
 import pysectools
+from pygtail import Pygtail as tail
 
 VAULT_URL = 'http://127.0.0.1:8200'
 HOST, PORT = 'localhost', 514
+LOG_FILE = 'MOCK_DATA.txt'
 interval = randint(3, 5)
 
 # Protect our memory from leaking secrets
@@ -21,6 +23,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 token = keyring.get_password('dev-vault', 'syslogd')
 headers = {'X-Vault-Token': token}
+
 
 def rotate_key(name):
     url = VAULT_URL + '/v1/transit/keys/{}/rotate'.format(name)
@@ -36,7 +39,7 @@ def rotate_key(name):
 def sign_message(name, message):
     url = VAULT_URL + '/v1/transit/sign/{}'.format(name)
     m = message.encode()
-    payload = { 'input': b64encode(m).decode('ascii') }
+    payload = {'input': b64encode(m).decode('ascii')}
 
     try:
         r = requests.post(url, headers=headers, json=payload)
@@ -45,12 +48,7 @@ def sign_message(name, message):
         return None
 
 
-# As you can see, there is no connect() call; UDP has no connections.
-# Instead, data is directly sent to the recipient via sendto().
-with open('MOCK_DATA.txt') as fp:
-    lines = fp.readlines()
-
-for l in lines:
+for l in tail(LOG_FILE):
     l = l.strip()
     sleep(randint(0, 3))
     # Generate new key sort-of-randomly
@@ -66,6 +64,8 @@ for l in lines:
         break
 
     # Send message to server.
+    # As you can see, there is no connect() call; UDP has no connections.
+    # Instead, data is directly sent to the recipient via sendto().
     sock.sendto(bytes('{} SIGNATURE: {}\n'.format(
         l, sig), 'utf-8'), (HOST, PORT))
     received = str(sock.recv(1024), 'utf-8')
