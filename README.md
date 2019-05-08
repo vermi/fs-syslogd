@@ -7,7 +7,7 @@ For running the vault server, make sure you have Docker installed
 
 1. Clone this repo.
 2. `git submodule update --init`
-3. `docker build -f docker-vault/0.X/Dockerfile vault:latest`
+3. `docker build -f docker-vault/0.X/Dockerfile -t vault:latest .`
 4. `pip install -r requirements.txt`
 5. `vault-files/vault-setup.sh`
 6. Modify syslogd.py and sender.py to use the actual vault server IP (currently set to localhost)
