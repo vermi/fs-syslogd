@@ -4,5 +4,5 @@ pygtail==0.10.1
 keyring==19.0.1
 tinydb==3.13.0
 pysectools==0.5.1
-requests==2.21.0
+requests==2.31.0
 urllib3>=1.25.9 # not directly required, pinned by Snyk to avoid a vulnerability
