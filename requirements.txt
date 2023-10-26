@@ -1,4 +1,4 @@
-twisted>=20.3.0
+twisted>=23.10.0rc1
 syslog_rfc5424_parser==0.3.1
 pygtail==0.10.1
 keyring==19.0.1
