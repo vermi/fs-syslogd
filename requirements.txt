@@ -1,0 +1,5 @@
+cryptography
+requests
+ratelimit
+pytest
+python-daemon

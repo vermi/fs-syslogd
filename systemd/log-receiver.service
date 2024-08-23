@@ -1,0 +1,11 @@
+[Unit]
+Description=Log Receiver for fs-syslogd
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /path/to/your/repo/src/log_receiver.py
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target

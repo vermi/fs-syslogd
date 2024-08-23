@@ -1,0 +1,27 @@
+{
+    "log_dir": "/var/log/fs-syslogd/",
+    "key_file": "/etc/fs-syslogd/encryption_key.bin",
+    "salt_size": 16,
+    "initial_secret": "initial_secret_value",
+    "key_rotation_interval": 3600,
+    "max_log_size": 10485760,
+    "backup_count": 5,
+    "remote_log_servers": [
+        {
+            "address": "192.168.1.100",
+            "port": 6514,
+            "tls_cert_file": "/etc/fs-syslogd/client.crt",
+            "tls_key_file": "/etc/fs-syslogd/client.key",
+            "tls_ca_cert_file": "/etc/fs-syslogd/ca.crt"
+        }
+    ],
+    "rate_limit": {
+        "calls": 100,
+        "period": 60
+    },
+    "health_check_interval": 300,
+    "log_format": "plain",
+    "monitoring_webhook": "",
+    "max_retries": 3,
+    "retry_delay": 5
+}
