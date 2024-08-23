@@ -3,6 +3,30 @@
 
 `fs-syslogd` is a forward-secure syslog daemon designed to encrypt each log entry with a unique derived key using a Key Derivation Function (KDF). This ensures that even if one key is compromised, the security of previous and future logs is not affected. The system consists of a sender (the `fs-syslogd` daemon) and a receiver (the log receiver) which securely receives and decrypts log messages.
 
+## Shortcomings and Security Considerations
+
+While `fs-syslogd` provides a robust forward-secure logging solution, there are some areas that users should be aware of when deploying this system in production:
+
+1. **Secret Management**: 
+   - The shared secret and initial secret for key derivation are stored in configuration files or environment variables. It is critical to secure these secrets using a secure secrets management system or by using environment variables that are protected by the operating system.
+   - Avoid hardcoding secrets in your configuration files; instead, use secure vaults or environment variables.
+
+2. **Key Rotation Logic**:
+   - Although the key rotation mechanism is based on elapsed time, users should monitor and adjust the key rotation interval according to their security policies. Ensure that keys are rotated frequently enough to minimize the risk of compromise.
+
+3. **Asynchronous Processing**:
+   - The system relies heavily on asynchronous processing. While this improves performance, it may introduce complexity in error handling and recovery. Ensure that adequate monitoring is in place to detect and respond to any issues that may arise in the asynchronous tasks.
+
+4. **Error Handling**:
+   - While the system includes basic error handling and retry logic, additional safeguards might be needed depending on your environment. Consider enhancing the monitoring and alerting mechanisms to catch and respond to failures promptly.
+
+5. **Performance Overhead**:
+   - The encryption and decryption processes, particularly with frequent key rotation, can introduce performance overhead. Benchmark the system in your specific environment to understand its impact and adjust configuration settings accordingly.
+
+6. **File Permissions**:
+   - Ensure that the log directories and key files have the correct permissions set to prevent unauthorized access. The installation script and documentation guide you through setting up these permissions, but ongoing audits are recommended.
+
+
 ## Features
 
 - **Forward Security**: Each log entry is encrypted with a unique derived key, ensuring robust forward security.
