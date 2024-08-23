@@ -52,10 +52,6 @@ fs-syslogd/
 ├── config/
 │   ├── fs_syslogd_config.json  # Example configuration file for fs-syslogd
 │   ├── receiver_config.json    # Example configuration file for log receiver
-├── docs/
-│   ├── deployment.md           # Deployment instructions and documentation
-│   ├── architecture.md         # System architecture overview
-│   └── benchmarking.md         # Detailed benchmarking instructions
 ├── systemd/
 │   ├── fs-syslogd.service      # Systemd service file for fs-syslogd
 │   └── log-receiver.service    # Systemd service file for log receiver
@@ -117,7 +113,8 @@ Edit `/etc/fs-syslogd/fs_syslogd_config.json` and `/etc/fs-syslogd/receiver_conf
 - **log_dir**: Directory for storing local logs.
 - **key_file**: Path to the file storing the pre-shared key.
 - **remote_log_servers**: List of log receiver endpoints.
-- **shared_secret**: Pre-shared key used to derive encryption keys.
+- **shared_secret**: Pre-shared key used to derive encryption keys. Avoid storing this in plain text within configuration files; consider using environment variables or a secrets management tool.
+
 
 ### Service Deployment
 
@@ -263,6 +260,9 @@ The output will display timing information for each received log message, includ
 2. **Optimize Parameters**: Based on the results, you can optimize configuration parameters in the `fs-syslogd_config.json` and `receiver_config.json` files to balance security and performance.
 
 3. **Monitor Resource Usage**: Use tools like `htop`, `top`, or `vmstat` to monitor CPU and memory usage during the benchmarks to identify potential bottlenecks.
+
+4. **Adjusting for Performance**: Based on the results of the benchmarking, consider adjusting the key rotation interval, log format, and rate limiting parameters to balance security with performance. Ensure that your environment can handle the cryptographic workload, especially under high log volumes.
+
 
 
 ## Contributing
